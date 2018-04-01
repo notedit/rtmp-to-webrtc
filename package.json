@@ -1,0 +1,25 @@
+{
+  "name": "rtmp-to-webrtc",
+  "version": "1.0.0",
+  "description": "rtmp to  webrtc",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/notedit/rtmp-to-webrtc.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/notedit/rtmp-to-webrtc/issues"
+  },
+  "homepage": "https://github.com/notedit/rtmp-to-webrtc#readme",
+  "dependencies": {
+    "fluent-ffmpeg": "^2.1.2",
+    "medooze-media-server": "^0.20.0",
+    "node-media-server": "^1.2.6",
+    "semantic-sdp": "^3.4.0"
+  }
+}
