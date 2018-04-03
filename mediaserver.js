@@ -1,5 +1,7 @@
+
+const getPort = require('get-port');
 const medoozeMediaServer = require('medooze-media-server');
-//Get Semantic SDP objects
+
 const SemanticSDP	= require('semantic-sdp');
 const SDPInfo		= SemanticSDP.SDPInfo;
 const MediaInfo		= SemanticSDP.MediaInfo;
@@ -12,7 +14,6 @@ const Direction		= SemanticSDP.Direction;
 const CodecInfo		= SemanticSDP.CodecInfo;
 
 
-
 class MediaServer 
 {
     constructor(publicIp)
@@ -21,26 +22,118 @@ class MediaServer
         medoozeMediaServer.enableDebug(true);
         medoozeMediaServer.enableUltraDebug(true);
 
-        this.streams = {};
+        this.streams = new Map();
     }
 
     async createStream(streamName)
     {
         const streamer = medoozeMediaServer.createStreamer();
-        const video = new MediaInfo("video","video");
-        
+        const video = new MediaInfo(streamName+'video','video');
+
         //Add h264 codec
-        video.addCodec(new CodecInfo("h264",96));
-        //Create session for video
+        video.addCodec(new CodecInfo('h264',96));
+
+        let port = await this.getMediaPort();
 
         //https://github.com/medooze/media-server-demo-node/blob/master/index.js#L522
         const session = streamer.createSession(video, {
 	        local  : {
-                port: 5004
+                port: port
 	        }
         });
 
+        // todo audio 
 
+        this.streams.set(streamName, {
+            video:session
+        });
+
+    }
+    async getMediaPort()
+    {
+        let port;
+        while(true)
+        {
+            port = await getPort();
+            if(port%2 == 0){
+                break;
+            }
+        }
+        return port;
+    }
+    async offerStream(streamname, offerStr)
+    {
+        let offer = SDPInfo.process(offerStr);
+
+        const transport = this.endpoint.createTransport({
+            dtls : offer.getDTLS(),
+            ice : offer.getICE()
+        });
+
+        transport.setRemoteProperties({
+            audio : offer.getMedia('audio'),
+            video : offer.getMedia('video')
+        });
+
+        //Get local DTLS and ICE info
+        const dtls = transport.getLocalDTLSInfo();
+        const ice  = transport.getLocalICEInfo();
+
+        //Get local candidates
+        const candidates = endpoint.getLocalCandidates();
+
+        let answer = new SDPInfo();
+
+        answer.setDTLS(dtls);
+        answer.setICE(ice);
+
+        for (let i=0;i<candidates.length;++i)
+        {
+            answer.addCandidate(candidates[i]);
+        }
+
+        let audioOffer = offer.getMedia('audio');
+
+        if (audioOffer) 
+        {
+            let  audio = new MediaInfo(audioOffer.getId(), 'audio');
+            //Set recv only
+            audio.setDirection(Direction.RECVONLY);
+            //Add it to answer
+            answer.addMedia(audio);    
+        }
+
+        let videoOffer = offer.getMedia('video');
+
+        if (videoOffer)
+        {
+            let  video = new MediaInfo(videoOffer.getId(), 'video');
+            let h264 = videoOffer.getCodec('h264');
+            video.addCodec(h264);
+            video.setDirection(Direction.RECVONLY);
+            answer.addMedia(video);
+        }
+
+        transport.setLocalProperties({
+            audio : answer.getMedia('audio'),
+            video : answer.getMedia('video')
+        });
+
+        const outgoingStream  = transport.createOutgoingStream({
+            audio: true,
+            video: true
+        });
+
+        let videoSession = this.streams.get(streamname).video
+
+        // now  we only attach video 
+        outgoingStream.getVideoTracks()[0].attachTo(videoSession.getIncomingStreamTrack());
+
+        const info = outgoingStream.getStreamInfo();
+
+        answer.addStream(info);
+
+        return answer.toString();
     }
 }
 

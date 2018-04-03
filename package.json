@@ -18,6 +18,7 @@
   "homepage": "https://github.com/notedit/rtmp-to-webrtc#readme",
   "dependencies": {
     "fluent-ffmpeg": "^2.1.2",
+    "get-port": "^3.2.0",
     "medooze-media-server": "^0.20.0",
     "node-media-server": "^1.2.6",
     "semantic-sdp": "^3.4.0"
