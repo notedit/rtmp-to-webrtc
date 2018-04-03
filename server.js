@@ -1,4 +1,33 @@
 const NodeMediaServer = require('node-media-server');
+const express = require('express');
+var bodyParser = require('body-parser');
+
+const MediaServer = require('./mediaserver');
+
+const app = express();
+const mediaserver = new MediaServer('127.0.0.1');
+
+
+app.use(bodyParser.json()); 
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(express.static('./'));
+
+
+const stream = 'live';
+const rtmpUrl = 'rtmp://127.0.0.1/live/';
+
+app.post('/offer', (req, res) => {
+
+    let offer = req.body.offer;
+    let answer = mediaserver.offerStream(stream, offer);
+    res.json({answer:answer});
+})
+
+app.listen(4001, function () {
+    console.log('Example app listening on port 4001!\n');
+    console.log('Open http://localhost:4001/');
+})
 
 const config = {
     rtmp: {
@@ -14,14 +43,14 @@ const config = {
     }
 };
 
-var nms = new NodeMediaServer(config)
+const nms = new NodeMediaServer(config)
 nms.run();
 
 
 nms.on('postPublish', (id, StreamPath, args) => {
     console.log('[NodeEvent on postPublish]', `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
     // we need to transcode
-    
+    mediaserver.createStream(stream,rtmpUrl);
 });
 
 nms.on('donePublish', (id, StreamPath, args) => {

@@ -1,6 +1,7 @@
 
 const getPort = require('get-port');
 const medoozeMediaServer = require('medooze-media-server');
+const ffmpeg = require('fluent-ffmpeg');
 
 const SemanticSDP	= require('semantic-sdp');
 const SDPInfo		= SemanticSDP.SDPInfo;
@@ -25,7 +26,7 @@ class MediaServer
         this.streams = new Map();
     }
 
-    async createStream(streamName)
+    async createStream(streamName,rtmpUrl)
     {
         const streamer = medoozeMediaServer.createStreamer();
         const video = new MediaInfo(streamName+'video','video');
@@ -35,7 +36,7 @@ class MediaServer
 
         let port = await this.getMediaPort();
 
-        //https://github.com/medooze/media-server-demo-node/blob/master/index.js#L522
+
         const session = streamer.createSession(video, {
 	        local  : {
                 port: port
@@ -47,6 +48,30 @@ class MediaServer
         this.streams.set(streamName, {
             video:session
         });
+
+        let videoout = 'rtp://127.0.0.1:' + port;
+
+        ffmpeg(rtmpUrl + streamName)
+            .inputOptions([
+                '-fflags nobuffer'
+            ])
+            .output(videoout)
+            .outputOptions([
+                '-vcodec copy',
+                '-an',
+                '-f rtp',
+                '-payload_type 96'
+            ])
+            .on('start', (commandLine) => {
+                console.log(commandLine);
+            })
+            .on('error', (err,stdout,stderr) =>{
+                console.error('ffmpeg error', stderr);
+            })
+            on('end', () => {
+                console.log('transcode end')
+            })
+            .run()
 
     }
     async getMediaPort()
@@ -137,5 +162,6 @@ class MediaServer
     }
 }
 
+module.exports = MediaServer;
 
 
