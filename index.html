@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>
+<title> dotEngine  </title>
+<style type="text/css">
+
+
+</style>
+
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script type='text/javascript'>
+
+window.localStorage.setItem('debug', '*ERROR*');
+
+let streamName = 'live';
+let video_container = null;
+
+let sdp;
+let pc;
+
+function init() {
+	video_container = document.getElementById('video_container');
+}
+
+
+function playStream() {
+	if (window.RTCPeerConnection)
+		pc = new RTCPeerConnection({
+			bundlePolicy: "max-bundle",
+			rtcpMuxPolicy : "require"
+		});
+	else 
+        pc = new webkitRTCPeerConnection(null);
+        
+    pc.onaddstream = function(event) {
+
+        console.debug('onaddstream');
+        addRemoteVideo(event.stream);
+    };
+
+    pc.onremovestream = function(event) {
+
+        console.debug('onremovestream');
+        removeRemoteVideo();
+    }
+
+    pc.createOffer({
+        offerToReceiveVideo: true,
+        offerToReceiveAudio: true
+    })
+    .then(function(offer) {
+        console.debug("createOffer sucess",offer);
+        
+        sdp = offer.sdp;
+        pc.setLocalDescription(offer);
+
+
+        axios.post('/offer', {
+            stream: streamName,
+            offer: offer.sdp
+        })
+        .then(function (response) {
+            console.log(response.data);
+            let answerStr = response.data.answer;
+            let answer = new RTCSessionDescription({
+                type: 'answer',
+                sdp: answerStr
+            });
+
+            pc.setRemoteDescription(answer, function(){
+                console.log('setRemoteDescription');
+            }, function(error) {
+                console.log('setRemoteDescription', error)
+            });
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+
+    })
+    .catch(function(error) {
+        console.error('error', error);
+    });
+}
+
+
+function addRemoteVideo(stream) {
+	let element = document.createElement('video');
+	video_container.appendChild(element);
+	element.id = 'remote_video';
+	element.width = 320;
+	element.height = 240;
+	element.srcObject = stream;
+	element.play();
+	element.volume = 0;
+	element.controls = true;
+}
+
+
+function removeRemoteVideo() {
+	console.log('Remote video removed id: ' + id);
+	let element = document.getElementById('remote_video');
+	if (element) {
+		// element.pause();
+		// element.srcObject = null;
+		video_container.removeChild(element);
+	}
+	else {
+		console.log('Remote video element not found');
+	}
+}
+
+
+</script>
+</head>
+<body onload="init();">
+	<h1>DotEngine rtmp to WebRTC Demo</h1>
+
+	<br/>
+
+	<div id="conference">
+		<div>
+
+            <button onclick="playStream();">
+                playStream
+            </button>
+
+			<span id="state_span">  </span>
+		</div>
+		Video:
+		<br />
+		<div id="video_container">
+
+        </div>
+	</div>
+</body>
+</html>
