@@ -47,7 +47,7 @@ function playStream() {
 
     pc.createOffer({
         offerToReceiveVideo: true,
-        offerToReceiveAudio: true
+        offerToReceiveAudio: false
     })
     .then(function(offer) {
         console.debug("createOffer sucess",offer);

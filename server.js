@@ -14,13 +14,16 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('./'));
 
 
-const stream = 'live';
 const rtmpUrl = 'rtmp://127.0.0.1/live/';
 
-app.post('/offer', (req, res) => {
+app.post('/offer', async (req, res) => {
 
+    console.log('request body', req.body);
+
+    let stream = req.body.stream;
     let offer = req.body.offer;
-    let answer = mediaserver.offerStream(stream, offer);
+    let answer = await mediaserver.offerStream(stream, offer);
+    console.log('answer', answer);
     res.json({answer:answer});
 })
 
@@ -50,7 +53,7 @@ nms.run();
 nms.on('postPublish', (id, StreamPath, args) => {
     console.log('[NodeEvent on postPublish]', `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
     // we need to transcode
-    mediaserver.createStream(stream,rtmpUrl);
+    mediaserver.createStream('live',rtmpUrl);
 });
 
 nms.on('donePublish', (id, StreamPath, args) => {

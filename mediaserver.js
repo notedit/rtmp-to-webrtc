@@ -22,7 +22,7 @@ class MediaServer
         this.endpoint = medoozeMediaServer.createEndpoint(publicIp);
         medoozeMediaServer.enableDebug(true);
         medoozeMediaServer.enableUltraDebug(true);
-
+        
         this.streams = new Map();
     }
 
@@ -57,7 +57,10 @@ class MediaServer
             ])
             .output(videoout)
             .outputOptions([
-                '-vcodec copy',
+                '-flags +local_header',
+                '-vcodec libx264',
+                '-x264opts keyint=48:min-keyint=48:no-scenecut',
+                '-profile baseline',
                 '-an',
                 '-f rtp',
                 '-payload_type 96'
@@ -68,7 +71,7 @@ class MediaServer
             .on('error', (err,stdout,stderr) =>{
                 console.error('ffmpeg error', stderr);
             })
-            on('end', () => {
+            .on('end', () => {
                 console.log('transcode end')
             })
             .run()
@@ -105,7 +108,7 @@ class MediaServer
         const ice  = transport.getLocalICEInfo();
 
         //Get local candidates
-        const candidates = endpoint.getLocalCandidates();
+        const candidates = this.endpoint.getLocalCandidates();
 
         let answer = new SDPInfo();
 
@@ -125,19 +128,21 @@ class MediaServer
             //Set recv only
             audio.setDirection(Direction.RECVONLY);
             //Add it to answer
-            answer.addMedia(audio);    
+            //answer.addMedia(audio);    
         }
 
         let videoOffer = offer.getMedia('video');
 
-        if (videoOffer)
-        {
-            let  video = new MediaInfo(videoOffer.getId(), 'video');
-            let h264 = videoOffer.getCodec('h264');
-            video.addCodec(h264);
-            video.setDirection(Direction.RECVONLY);
-            answer.addMedia(video);
-        }
+        //if (videoOffer)
+        //{
+        let  video = new MediaInfo(videoOffer.getId(), 'video');
+        let h264 = videoOffer.getCodec('h264');
+        video.addCodec(h264);
+        video.setDirection(Direction.RECVONLY);
+        answer.addMedia(video);
+        //}
+
+        console.log('answer', answer);
 
         transport.setLocalProperties({
             audio : answer.getMedia('audio'),
