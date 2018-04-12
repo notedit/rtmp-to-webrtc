@@ -20,6 +20,7 @@
     "body-parser": "^1.18.2",
     "fluent-ffmpeg": "^2.1.2",
     "get-port": "^3.2.0",
+    "medooze-media-server": "^0.28.1",
     "node-media-server": "^1.2.6",
     "semantic-sdp": "^3.4.0"
   }

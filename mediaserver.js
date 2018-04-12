@@ -50,17 +50,15 @@ class MediaServer
         });
 
         let videoout = 'rtp://127.0.0.1:' + port;
-
         ffmpeg(rtmpUrl + streamName)
             .inputOptions([
+                '-re',
                 '-fflags nobuffer'
             ])
             .output(videoout)
             .outputOptions([
-                '-flags +local_header',
                 '-vcodec libx264',
-                '-x264opts keyint=48:min-keyint=48:no-scenecut',
-                '-profile baseline',
+                '-bsf dump_extra=freq=keyframe',
                 '-an',
                 '-f rtp',
                 '-payload_type 96'
@@ -75,6 +73,8 @@ class MediaServer
                 console.log('transcode end')
             })
             .run()
+
+        return port
 
     }
     async getMediaPort()
@@ -136,9 +136,9 @@ class MediaServer
         //if (videoOffer)
         //{
         let  video = new MediaInfo(videoOffer.getId(), 'video');
-        let h264 = videoOffer.getCodec('h264');
-        video.addCodec(h264);
-        video.setDirection(Direction.RECVONLY);
+        let videocodec = videoOffer.getCodec('h264');
+        video.addCodec(videocodec);
+        video.setDirection(Direction.SENDRECV);
         answer.addMedia(video);
         //}
 

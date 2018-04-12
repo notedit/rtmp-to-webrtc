@@ -19,7 +19,7 @@ const rtmpUrl = 'rtmp://127.0.0.1/live/';
 app.post('/offer', async (req, res) => {
 
     console.log('request body', req.body);
-
+    
     let stream = req.body.stream;
     let offer = req.body.offer;
     let answer = await mediaserver.offerStream(stream, offer);
