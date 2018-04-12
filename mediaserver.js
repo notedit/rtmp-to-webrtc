@@ -52,13 +52,12 @@ class MediaServer
         let videoout = 'rtp://127.0.0.1:' + port;
         ffmpeg(rtmpUrl + streamName)
             .inputOptions([
-                '-re',
                 '-fflags nobuffer'
             ])
             .output(videoout)
             .outputOptions([
-                '-vcodec libx264',
-                '-bsf dump_extra=freq=keyframe',
+                '-bsf:v h264_mp4toannexb,dump_extra',
+                '-vcodec copy',
                 '-an',
                 '-f rtp',
                 '-payload_type 96'

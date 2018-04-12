@@ -19,9 +19,12 @@ const rtmpUrl = 'rtmp://127.0.0.1/live/';
 app.post('/offer', async (req, res) => {
 
     console.log('request body', req.body);
-    
+
     let stream = req.body.stream;
     let offer = req.body.offer;
+
+    await mediaserver.createStream('live',rtmpUrl);
+
     let answer = await mediaserver.offerStream(stream, offer);
     console.log('answer', answer);
     res.json({answer:answer});
@@ -34,6 +37,7 @@ app.listen(4001, function () {
 
 const config = {
     rtmp: {
+        local_header: true,
         port: 1935,
         chunk_size: 1024,
         gop_cache: true,
@@ -53,7 +57,7 @@ nms.run();
 nms.on('postPublish', (id, StreamPath, args) => {
     console.log('[NodeEvent on postPublish]', `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
     // we need to transcode
-    mediaserver.createStream('live',rtmpUrl);
+
 });
 
 nms.on('donePublish', (id, StreamPath, args) => {
