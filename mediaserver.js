@@ -28,39 +28,61 @@ class MediaServer
 
     async createStream(streamName,rtmpUrl)
     {
-        const streamer = medoozeMediaServer.createStreamer();
-        const video = new MediaInfo(streamName+'video','video');
+        const videoStreamer = medoozeMediaServer.createStreamer();
+        const audioStreamer = medoozeMediaServer.createStreamer();
+
+        const video = new MediaInfo(streamName+':video','video');
+        const audio = new MediaInfo(streamName+':audio','audio');
+
 
         //Add h264 codec
         video.addCodec(new CodecInfo('h264',96));
+        audio.addCodec(new CodecInfo('opus',100));
 
-        let port = await this.getMediaPort();
+
+        let videoPort = await this.getMediaPort();
+        let audioPort = await this.getMediaPort();
 
 
-        const session = streamer.createSession(video, {
-	        local  : {
-                port: port
+        const videoSession = videoStreamer.createSession(video, {
+	        local : {
+                port: videoPort
 	        }
         });
 
-        // todo audio 
-
-        this.streams.set(streamName, {
-            video:session
+        const audioSession = audioStreamer.createSession(audio, {
+            local : {
+                port: audioPort
+            }
         });
 
-        let videoout = 'rtp://127.0.0.1:' + port;
+
+        this.streams.set(streamName, {
+            video:videoSession,
+            audio:audioSession
+        });
+
+        let videoout = 'rtp://127.0.0.1:' + videoPort;
+        let audioout = 'rtp://127.0.0.1:' + audioPort;
         ffmpeg(rtmpUrl + streamName)
             .inputOptions([
                 '-fflags nobuffer'
             ])
             .output(videoout)
             .outputOptions([
+                '-flags:v +global_header',
                 '-bsf:v h264_mp4toannexb,dump_extra',
                 '-vcodec copy',
                 '-an',
                 '-f rtp',
                 '-payload_type 96'
+            ])
+            .output(audioout)
+            .outputOptions([
+                '-acodec libopus',
+                '-vn',
+                '-f rtp',
+                '-payload_type 100'
             ])
             .on('start', (commandLine) => {
                 console.log(commandLine);
