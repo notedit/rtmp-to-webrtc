@@ -4,9 +4,8 @@
 <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>
 <title> dotEngine  </title>
 <style type="text/css">
-
-
 </style>
+
 
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script type='text/javascript'>
@@ -16,21 +15,19 @@ window.localStorage.setItem('debug', '*ERROR*');
 let streamName = 'live';
 let video_container = null;
 
-let sdp;
-let pc;
 
 function init() {
 	video_container = document.getElementById('video_container');
 }
 
 function playStream() {
-	if (window.RTCPeerConnection)
-		pc = new RTCPeerConnection({
-			bundlePolicy: "max-bundle",
-			rtcpMuxPolicy : "require"
-		});
-	else 
-        pc = new webkitRTCPeerConnection(null);
+
+
+    const pc = new RTCPeerConnection({
+        bundlePolicy: "max-bundle",
+        rtcpMuxPolicy : "require"
+    });
+
         
     pc.onaddstream = function(event) {
 
@@ -51,7 +48,6 @@ function playStream() {
     .then(function(offer) {
         console.debug("createOffer sucess",offer);
         
-        sdp = offer.sdp;
         pc.setLocalDescription(offer);
 
         axios.post('/watch/' + streamName, {
