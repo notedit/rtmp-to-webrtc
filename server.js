@@ -1,6 +1,6 @@
 const NodeMediaServer = require('node-media-server');
 const express = require('express');
-var bodyParser = require('body-parser');
+const bodyParser = require('body-parser');
 
 const MediaServer = require('./mediaserver');
 
@@ -14,16 +14,20 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('./'));
 
 
-const rtmpUrl = 'rtmp://127.0.0.1/live/';
+const baseRtmpUrl = 'rtmp://127.0.0.1/live/';
 
-app.post('/offer', async (req, res) => {
+
+app.post('/watch/:stream', async (req, res) => {
 
     console.log('request body', req.body);
 
-    let stream = req.body.stream;
+    let stream = req.params.stream;
     let offer = req.body.offer;
 
-    await mediaserver.createStream('live',rtmpUrl);
+    // If we did handle the stream yet
+    if (!mediaserver.getStream(stream)) {
+        await mediaserver.createStream(stream, baseRtmpUrl + stream);
+    }
 
     let answer = await mediaserver.offerStream(stream, offer);
     console.log('answer', answer);
@@ -53,10 +57,8 @@ const config = {
 const nms = new NodeMediaServer(config)
 nms.run();
 
-
 nms.on('postPublish', (id, StreamPath, args) => {
     console.log('[NodeEvent on postPublish]', `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
-    // we need to transcode
 
 });
 

@@ -55,9 +55,7 @@ function playStream() {
         sdp = offer.sdp;
         pc.setLocalDescription(offer);
 
-
-        axios.post('/offer', {
-            stream: streamName,
+        axios.post('/watch/' + streamName, {
             offer: offer.sdp
         })
         .then(function (response) {
@@ -77,7 +75,6 @@ function playStream() {
         .catch(function (error) {
             console.log(error);
         });
-
     })
     .catch(function(error) {
         console.error('error', error);
@@ -118,14 +115,11 @@ function removeRemoteVideo() {
 	<h1>DotEngine rtmp to WebRTC Demo</h1>
 
 	<br/>
-
 	<div id="conference">
 		<div>
-
-            <button onclick="playStream();">
+           <button onclick="playStream();">
                 playStream
             </button>
-
 			<span id="state_span">  </span>
 		</div>
 		Video:

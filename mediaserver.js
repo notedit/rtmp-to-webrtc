@@ -14,6 +14,8 @@ const TrackInfo		= SemanticSDP.TrackInfo;
 const Direction		= SemanticSDP.Direction;
 const CodecInfo		= SemanticSDP.CodecInfo;
 
+const videoPt = 96;
+const audioPt = 100;
 
 class MediaServer 
 {
@@ -26,23 +28,27 @@ class MediaServer
         this.streams = new Map();
     }
 
+    getStream(streamName) 
+    {
+        return this.streams.get(streamName)
+    }
+
     async createStream(streamName,rtmpUrl)
     {
+
         const videoStreamer = medoozeMediaServer.createStreamer();
         const audioStreamer = medoozeMediaServer.createStreamer();
 
         const video = new MediaInfo(streamName+':video','video');
         const audio = new MediaInfo(streamName+':audio','audio');
 
-
         //Add h264 codec
-        video.addCodec(new CodecInfo('h264',96));
-        audio.addCodec(new CodecInfo('opus',100));
+        video.addCodec(new CodecInfo('h264',videoPt));
+        audio.addCodec(new CodecInfo('opus',audioPt));
 
 
         let videoPort = await this.getMediaPort();
         let audioPort = await this.getMediaPort();
-
 
         const videoSession = videoStreamer.createSession(video, {
 	        local : {
@@ -56,7 +62,6 @@ class MediaServer
             }
         });
 
-
         this.streams.set(streamName, {
             video:videoSession,
             audio:audioSession
@@ -64,7 +69,7 @@ class MediaServer
 
         let videoout = 'rtp://127.0.0.1:' + videoPort;
         let audioout = 'rtp://127.0.0.1:' + audioPort;
-        ffmpeg(rtmpUrl + streamName)
+        ffmpeg(rtmpUrl)
             .inputOptions([
                 '-fflags nobuffer'
             ])
@@ -75,14 +80,14 @@ class MediaServer
                 '-vcodec copy',
                 '-an',
                 '-f rtp',
-                '-payload_type 96'
+                '-payload_type ' + videoPt
             ])
             .output(audioout)
             .outputOptions([
                 '-acodec libopus',
                 '-vn',
                 '-f rtp',
-                '-payload_type 100'
+                '-payload_type ' + audioPt
             ])
             .on('start', (commandLine) => {
                 console.log(commandLine);
@@ -110,7 +115,7 @@ class MediaServer
         }
         return port;
     }
-    async offerStream(streamname, offerStr)
+    async offerStream(streamName, offerStr)
     {
         let offer = SDPInfo.process(offerStr);
 
@@ -154,14 +159,12 @@ class MediaServer
 
         let videoOffer = offer.getMedia('video');
 
-        //if (videoOffer)
-        //{
+      
         let  video = new MediaInfo(videoOffer.getId(), 'video');
         let videocodec = videoOffer.getCodec('h264');
         video.addCodec(videocodec);
-        video.setDirection(Direction.SENDRECV);
+        video.setDirection(Direction.RECVONLY);
         answer.addMedia(video);
-        //}
 
         console.log('answer', answer);
 
@@ -171,11 +174,10 @@ class MediaServer
         });
 
         const outgoingStream  = transport.createOutgoingStream({
-            audio: true,
             video: true
         });
 
-        let videoSession = this.streams.get(streamname).video
+        let videoSession = this.streams.get(streamName).video
 
         // now  we only attach video 
         outgoingStream.getVideoTracks()[0].attachTo(videoSession.getIncomingStreamTrack());
