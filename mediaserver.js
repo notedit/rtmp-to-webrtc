@@ -69,6 +69,8 @@ class MediaServer
 
         let videoout = 'rtp://127.0.0.1:' + videoPort;
         let audioout = 'rtp://127.0.0.1:' + audioPort;
+
+
         ffmpeg(rtmpUrl)
             .inputOptions([
                 '-fflags nobuffer'
@@ -82,13 +84,14 @@ class MediaServer
                 '-f rtp',
                 '-payload_type ' + videoPt
             ])
-            .output(audioout)
-            .outputOptions([
-                '-acodec libopus',
-                '-vn',
-                '-f rtp',
-                '-payload_type ' + audioPt
-            ])
+            // video only
+            // .output(audioout)
+            // .outputOptions([
+            //     '-acodec libopus',
+            //     '-vn',
+            //     '-f rtp',
+            //     '-payload_type ' + audioPt
+            // ])
             .on('start', (commandLine) => {
                 console.log(commandLine);
             })
@@ -99,8 +102,6 @@ class MediaServer
                 console.log('transcode end')
             })
             .run()
-
-        return port
 
     }
     async getMediaPort()
@@ -163,7 +164,7 @@ class MediaServer
         let  video = new MediaInfo(videoOffer.getId(), 'video');
         let videocodec = videoOffer.getCodec('h264');
         video.addCodec(videocodec);
-        video.setDirection(Direction.RECVONLY);
+        video.setDirection(Direction.SENDRECV);
         answer.addMedia(video);
 
         console.log('answer', answer);

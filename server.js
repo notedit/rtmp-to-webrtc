@@ -1,10 +1,12 @@
 const NodeMediaServer = require('node-media-server');
 const express = require('express');
 const bodyParser = require('body-parser');
-
+const ffmpeg = require('fluent-ffmpeg');
 const MediaServer = require('./mediaserver');
 
 const app = express();
+
+// need change is ip address
 const mediaserver = new MediaServer('127.0.0.1');
 
 
@@ -47,15 +49,11 @@ const config = {
         gop_cache: true,
         ping: 60,
         ping_timeout: 30
-    },
-    http: {
-        port: 8000,
-        allow_origin: '*'
     }
 };
 
+
 const nms = new NodeMediaServer(config)
-nms.run();
 
 nms.on('postPublish', (id, StreamPath, args) => {
     console.log('[NodeEvent on postPublish]', `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
@@ -65,3 +63,67 @@ nms.on('postPublish', (id, StreamPath, args) => {
 nms.on('donePublish', (id, StreamPath, args) => {
     console.log('[NodeEvent on donePublish]', `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
 });
+
+nms.run();
+
+
+// now we need simulate a rtmp stream 
+
+
+/*
+
+ffmpeg -f lavfi -re -i color=black:s=640x480:r=15 -filter:v "drawtext=text='%{localtime\:%T}':fontcolor=white:fontsize=80:x=20:y=20" -vcodec libx264 -tune zerolatency -preset ultrafast -g 15 -keyint_min 15 -profile:v baseline -level 3.0 -pix_fmt yuv420p -r 15 -f flv rtmp://localhost/live/live
+
+*/
+
+setTimeout(() => {
+
+    // const outStream = 'rtmp://localhost/live/live'
+    // ffmpeg()
+    // .input('color=black:s=640x480:r=15')
+    // .inputFormat('lavfi')
+    // .inputOptions([
+    //     '-re'
+    // ])
+    // .videoFilters([{
+    //     filter: 'drawtext',
+    //     options: {
+    //         fontfile:'./Arial.ttf',
+    //         text:"%{localtime:%T}",
+    //         fontcolor:'white',
+    //         fontsize:60,
+    //         x:10,
+    //         y:20
+    //     }
+    // },])
+    // .output(outStream)
+    // .outputOptions([
+    //     '-flags:v +global_header',
+    //     '-bsf:v h264_mp4toannexb,dump_extra',
+    //     '-vcodec libx264',
+    //     '-tune zerolatency',
+    //     '-preset ultrafast',
+    //     '-g 15',
+    //     '-keyint_min 15',
+    //     '-profile:v baseline',
+    //     '-level 3.0',
+    //     '-pix_fmt yuv420p',
+    //     '-r 15'
+    // ])
+    // .format('flv')
+    // .on('start', (commandLine) => {
+    //     console.log(commandLine);
+    // })
+    // .on('error', (err,stdout,stderr) =>{
+    //     console.error('ffmpeg error', stderr);
+    // })
+    // .on('end', () => {
+    //     console.log('transcode end')
+    // })
+    // .run()
+
+},1000)
+
+
+
+
