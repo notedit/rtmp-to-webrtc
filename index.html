@@ -82,10 +82,10 @@ function addRemoteVideo(stream) {
 	video_container.appendChild(element);
 	element.id = 'remote_video';
 	element.width = 640;
-	element.height = 480;
+    element.height = 480;
+    element.setAttribute('playsinline', true);
+    element.setAttribute('autoplay', true);
 	element.srcObject = stream;
-	element.play();
-	element.volume = 0;
 	element.controls = false;
 }
 
