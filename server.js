@@ -18,6 +18,9 @@ app.use(express.static('./'));
 
 const baseRtmpUrl = 'rtmp://127.0.0.1/live/';
 
+app.get('/test', async (req, res) => {
+    res.send('hello world')
+})
 
 app.post('/watch/:stream', async (req, res) => {
 
@@ -89,7 +92,7 @@ setTimeout(() => {
     //     filter: 'drawtext',
     //     options: {
     //         fontfile:'./Arial.ttf',
-    //         text:"%{localtime:%T}",
+    //         text:"%{localtime\:%T}",
     //         fontcolor:'white',
     //         fontsize:60,
     //         x:10,

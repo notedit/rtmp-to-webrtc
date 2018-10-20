@@ -20,8 +20,8 @@ function init() {
 	video_container = document.getElementById('video_container');
 }
 
-function playStream() {
 
+function playStream() {
 
     const pc = new RTCPeerConnection({
         bundlePolicy: "max-bundle",
@@ -81,12 +81,12 @@ function addRemoteVideo(stream) {
 	let element = document.createElement('video');
 	video_container.appendChild(element);
 	element.id = 'remote_video';
-	element.width = 320;
-	element.height = 240;
+	element.width = 640;
+	element.height = 480;
 	element.srcObject = stream;
 	element.play();
 	element.volume = 0;
-	element.controls = true;
+	element.controls = false;
 }
 
 
@@ -107,7 +107,7 @@ function removeRemoteVideo() {
 </script>
 </head>
 <body onload="init();">
-	<h1>DotEngine rtmp to WebRTC Demo</h1>
+	<h1> RTMP to WebRTC Demo</h1>
 
 	<br/>
 	<div id="conference">
