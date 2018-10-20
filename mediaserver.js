@@ -42,7 +42,8 @@ class MediaServer
         const video = new MediaInfo(streamName+':video','video');
         const audio = new MediaInfo(streamName+':audio','audio');
 
-        video.addCodec(new CodecInfo('vp8',videoPt));
+        //Add h264 codec
+        video.addCodec(new CodecInfo('h264',videoPt));
         audio.addCodec(new CodecInfo('opus',audioPt));
 
 
@@ -77,10 +78,10 @@ class MediaServer
             ])
             .output(videoout)
             .outputOptions([
-                // '-flags:v +global_header',
-                // '-bsf:v h264_mp4toannexb,dump_extra',
+                '-flags:v +global_header',
+                '-bsf:v h264_mp4toannexb,dump_extra',
                 //'-bsf:v dump_extra',
-                '-vcodec libvpx',
+                '-vcodec copy',
                 '-an',
                 '-f rtp',
                 '-payload_type ' + videoPt
@@ -154,7 +155,7 @@ class MediaServer
         {
             let  audio = new MediaInfo(audioOffer.getId(), 'audio');
             //Set recv only
-            audio.setDirection(Direction.RECVONLY);
+            audio.setDirection(Direction.SENDONLY);
             //Add it to answer
             //answer.addMedia(audio);    
         }
@@ -163,9 +164,9 @@ class MediaServer
 
       
         let  video = new MediaInfo(videoOffer.getId(), 'video');
-        let videocodec = videoOffer.getCodec('vp8');
+        let videocodec = videoOffer.getCodec('h264');
         video.addCodec(videocodec);
-        video.setDirection(Direction.SENDRECV);
+        video.setDirection(Direction.SENDONLY);
         answer.addMedia(video);
 
         console.log('answer', answer);
