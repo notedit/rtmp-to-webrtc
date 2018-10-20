@@ -42,13 +42,13 @@ class MediaServer
         const video = new MediaInfo(streamName+':video','video');
         const audio = new MediaInfo(streamName+':audio','audio');
 
-        //Add h264 codec
-        video.addCodec(new CodecInfo('h264',videoPt));
+        video.addCodec(new CodecInfo('vp8',videoPt));
         audio.addCodec(new CodecInfo('opus',audioPt));
 
 
         let videoPort = await this.getMediaPort();
         let audioPort = await this.getMediaPort();
+
 
         const videoSession = videoStreamer.createSession(video, {
 	        local : {
@@ -77,9 +77,10 @@ class MediaServer
             ])
             .output(videoout)
             .outputOptions([
-                '-flags:v +global_header',
-                '-bsf:v h264_mp4toannexb,dump_extra',
-                '-vcodec copy',
+                // '-flags:v +global_header',
+                // '-bsf:v h264_mp4toannexb,dump_extra',
+                //'-bsf:v dump_extra',
+                '-vcodec libvpx',
                 '-an',
                 '-f rtp',
                 '-payload_type ' + videoPt
@@ -162,7 +163,7 @@ class MediaServer
 
       
         let  video = new MediaInfo(videoOffer.getId(), 'video');
-        let videocodec = videoOffer.getCodec('h264');
+        let videocodec = videoOffer.getCodec('vp8');
         video.addCodec(videocodec);
         video.setDirection(Direction.SENDRECV);
         answer.addMedia(video);
