@@ -33,6 +33,26 @@ class MediaServer
         return this.streams.get(streamName)
     }
 
+    removeStream(streamName) 
+    {
+
+        stream = this.streams.get(streamName) 
+
+        if (stream) {
+
+            if (stream.videoStreamer) {
+                stream.videoStreamer.stop()
+            }
+
+            if (stream.audioStreamer) {
+                stream.audioStreamer.stop()
+            }
+        }
+
+        this.streams.delete(streamName)
+
+    }
+
     async createStream(streamName,rtmpUrl)
     {
 
@@ -62,8 +82,12 @@ class MediaServer
                 port: audioPort
             }
         });
-
+        
         this.streams.set(streamName, {
+            videoPort: videoPort,
+            audioPort: audioPort,
+            videoStreamer: videoStreamer,
+            audioStreamer: audioStreamer,
             video:videoSession,
             audio:audioSession
         });
@@ -78,8 +102,8 @@ class MediaServer
             ])
             .output(videoout)
             .outputOptions([
-                '-flags:v +global_header',
-                '-bsf:v h264_mp4toannexb,dump_extra',
+                // '-flags:v +global_header',
+                // '-bsf:v h264_mp4toannexb,dump_extra',
                 //'-bsf:v dump_extra',
                 '-vcodec copy',
                 '-an',
@@ -162,7 +186,6 @@ class MediaServer
 
         let videoOffer = offer.getMedia('video');
 
-      
         let  video = new MediaInfo(videoOffer.getId(), 'video');
         let videocodec = videoOffer.getCodec('h264');
         video.addCodec(videocodec);
@@ -177,7 +200,8 @@ class MediaServer
         });
 
         const outgoingStream  = transport.createOutgoingStream({
-            video: true
+            video: true,
+            audio: false
         });
 
         let videoSession = this.streams.get(streamName).video

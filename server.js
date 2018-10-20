@@ -29,10 +29,10 @@ app.post('/watch/:stream', async (req, res) => {
     let stream = req.params.stream;
     let offer = req.body.offer;
 
-    // If we did handle the stream yet
-    if (!mediaserver.getStream(stream)) {
-        await mediaserver.createStream(stream, baseRtmpUrl + stream);
-    }
+    // // If we did handle the stream yet
+    // if (!mediaserver.getStream(stream)) {
+    //     await mediaserver.createStream(stream, baseRtmpUrl + stream);
+    // }
 
     let answer = await mediaserver.offerStream(stream, offer);
     console.log('answer', answer);
@@ -61,11 +61,20 @@ const nms = new NodeMediaServer(config)
 nms.on('postPublish', (id, StreamPath, args) => {
     console.log('[NodeEvent on postPublish]', `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
 
+    let stream = StreamPath.split('/')[2]
+
+    mediaserver.createStream(stream, baseRtmpUrl + stream);
 });
 
 nms.on('donePublish', (id, StreamPath, args) => {
     console.log('[NodeEvent on donePublish]', `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
+
+    let stream = StreamPath.split('/')[2]
+
+    mediaserver.removeStream(stream);
 });
+
+
 
 nms.run();
 
