@@ -196,6 +196,10 @@ class MediaServer
 
         let videoSession = this.streams.get(streamName).video
 
+        videoSession.on('stopped', () => {
+            
+            transport.stop()
+        })
         // now  we only attach video 
         outgoingStream.getVideoTracks()[0].attachTo(videoSession.getIncomingStreamTrack());
 
