@@ -67,9 +67,11 @@ class MediaServer
         audio.addCodec(new CodecInfo('opus',audioPt));
 
 
-        let videoPort = await this.getMediaPort();
-        let audioPort = await this.getMediaPort();
+        // let videoPort = await this.getMediaPort();
+        // let audioPort = await this.getMediaPort();
 
+        let videoPort = 20000;
+        let audioPort = 20002;
 
         const videoSession = videoStreamer.createSession(video, {
 	        local : {
@@ -82,7 +84,7 @@ class MediaServer
                 port: audioPort
             }
         });
-        
+
         this.streams.set(streamName, {
             videoPort: videoPort,
             audioPort: audioPort,
@@ -95,17 +97,15 @@ class MediaServer
         let videoout = 'rtp://127.0.0.1:' + videoPort;
         let audioout = 'rtp://127.0.0.1:' + audioPort;
 
-
         ffmpeg(rtmpUrl)
             .inputOptions([
-                '-fflags nobuffer'
+                //'-fflags nobuffer'
             ])
             .output(videoout)
             .outputOptions([
-                // '-flags:v +global_header',
-                // '-bsf:v h264_mp4toannexb,dump_extra',
-                //'-bsf:v dump_extra',
-                '-vcodec copy',
+                '-flags:v +global_header',
+                '-bsf:v h264_mp4toannexb,dump_extra',
+                '-vcodec libx264',
                 '-an',
                 '-f rtp',
                 '-payload_type ' + videoPt
