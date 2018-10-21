@@ -1,8 +1,8 @@
 
 const getPort = require('get-port');
 const medoozeMediaServer = require('medooze-media-server');
-const ffmpeg = require('fluent-ffmpeg');
-
+const format = require('string-format');
+const execa = require('execa');
 const SemanticSDP	= require('semantic-sdp');
 const SDPInfo		= SemanticSDP.SDPInfo;
 const MediaInfo		= SemanticSDP.MediaInfo;
@@ -22,6 +22,8 @@ const audioCodec = 'opus';
 
 let videoPort = 20000;
 let audioPort = 20002;
+
+const RTMP_TO_RTP = "gst-launch-1.0  -v  rtmpsrc location=rtmp://localhost/live/{stream} ! flvdemux ! h264parse ! rtph264pay config-interval=-1 pt={pt} !  udpsink host=127.0.0.1 port={port}"
 
 class MediaServer 
 {
@@ -100,40 +102,22 @@ class MediaServer
             audio:audioSession
         });
 
-        let videoout = 'rtp://127.0.0.1:' + videoPort;
-        let audioout = 'rtp://127.0.0.1:' + audioPort;
+        let rtmp_to_rtp = format(RTMP_TO_RTP, {stream:streamName, pt: videoPt, port: videoPort});
 
-        // ffmpeg(rtmpUrl)
-        //     .inputOptions([
-        //         '-fflags nobuffer'
-        //     ])
-        //     .output(videoout)
-        //     .outputOptions([
-        //         // '-flags:v +global_header',
-        //         // '-bsf:v h264_mp4toannexb,dump_extra',
-        //         '-vcodec copy',  // change to vp8 for now, h264 is not very stable 
-        //         '-an',
-        //         '-f rtp',
-        //         '-payload_type ' + videoPt
-        //     ])
-        //     // video only
-        //     // .output(audioout)
-        //     // .outputOptions([
-        //     //     '-acodec libopus',
-        //     //     '-vn',
-        //     //     '-f rtp',
-        //     //     '-payload_type ' + audioPt
-        //     // ])
-        //     .on('start', (commandLine) => {
-        //         console.log(commandLine);
-        //     })
-        //     .on('error', (err,stdout,stderr) =>{
-        //         console.error('ffmpeg error', stderr);
-        //     })
-        //     .on('end', () => {
-        //         console.log('transcode end')
-        //     })
-        //     .run()
+        console.log('rtmp_to_rtp ', rtmp_to_rtp);
+
+
+        const gst = execa.shell(rtmp_to_rtp);
+
+        gst.on('close', (code, signal) => {
+
+            console.log('gst close', code, signal)
+        })
+
+        gst.on('exit', (code, signal) => {
+
+            console.log(code, signal)
+        })
 
     }
     async getMediaPort()
