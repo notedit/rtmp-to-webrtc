@@ -16,6 +16,9 @@ const CodecInfo		= SemanticSDP.CodecInfo;
 
 const videoPt = 96;
 const audioPt = 100;
+const videoCodec = 'vp8';  // use vp8 for now, h264 is not stable for now
+// const videoCodec = 'h264'; 
+const audioCodec = 'opus';
 
 class MediaServer 
 {
@@ -63,15 +66,12 @@ class MediaServer
         const audio = new MediaInfo(streamName+':audio','audio');
 
         //Add h264 codec
-        video.addCodec(new CodecInfo('h264',videoPt));
-        audio.addCodec(new CodecInfo('opus',audioPt));
+        video.addCodec(new CodecInfo(videoCodec,videoPt));
+        audio.addCodec(new CodecInfo(audioCodec,audioPt));
 
 
-        // let videoPort = await this.getMediaPort();
-        // let audioPort = await this.getMediaPort();
-
-        let videoPort = 20000;
-        let audioPort = 20002;
+        let videoPort = await this.getMediaPort();
+        let audioPort = await this.getMediaPort();
 
         const videoSession = videoStreamer.createSession(video, {
 	        local : {
@@ -99,13 +99,13 @@ class MediaServer
 
         ffmpeg(rtmpUrl)
             .inputOptions([
-                //'-fflags nobuffer'
+                '-fflags nobuffer'
             ])
             .output(videoout)
             .outputOptions([
-                '-flags:v +global_header',
-                '-bsf:v h264_mp4toannexb,dump_extra',
-                '-vcodec libx264',
+                // '-flags:v +global_header',
+                // '-bsf:v h264_mp4toannexb,dump_extra',
+                '-vcodec libvpx',  // change to vp8 for now, h264 is not very stable 
                 '-an',
                 '-f rtp',
                 '-payload_type ' + videoPt
@@ -187,7 +187,7 @@ class MediaServer
         let videoOffer = offer.getMedia('video');
 
         let  video = new MediaInfo(videoOffer.getId(), 'video');
-        let videocodec = videoOffer.getCodec('h264');
+        let videocodec = videoOffer.getCodec(videoCodec);
         video.addCodec(videocodec);
         video.setDirection(Direction.SENDONLY);
         answer.addMedia(video);
