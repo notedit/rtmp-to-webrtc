@@ -16,9 +16,12 @@ const CodecInfo		= SemanticSDP.CodecInfo;
 
 const videoPt = 96;
 const audioPt = 100;
-const videoCodec = 'vp8';  // use vp8 for now, h264 is not stable for now
-// const videoCodec = 'h264'; 
+// const videoCodec = 'vp8';  // use vp8 for now, h264 is not stable for now
+const videoCodec = 'h264'; 
 const audioCodec = 'opus';
+
+let videoPort = 20000;
+let audioPort = 20002;
 
 class MediaServer 
 {
@@ -70,8 +73,11 @@ class MediaServer
         audio.addCodec(new CodecInfo(audioCodec,audioPt));
 
 
-        let videoPort = await this.getMediaPort();
-        let audioPort = await this.getMediaPort();
+        if (!videoPort) {
+            videoPort = await this.getMediaPort();
+            audioPort = await this.getMediaPort();
+        }
+
 
         const videoSession = videoStreamer.createSession(video, {
 	        local : {
@@ -97,37 +103,37 @@ class MediaServer
         let videoout = 'rtp://127.0.0.1:' + videoPort;
         let audioout = 'rtp://127.0.0.1:' + audioPort;
 
-        ffmpeg(rtmpUrl)
-            .inputOptions([
-                '-fflags nobuffer'
-            ])
-            .output(videoout)
-            .outputOptions([
-                // '-flags:v +global_header',
-                // '-bsf:v h264_mp4toannexb,dump_extra',
-                '-vcodec libvpx',  // change to vp8 for now, h264 is not very stable 
-                '-an',
-                '-f rtp',
-                '-payload_type ' + videoPt
-            ])
-            // video only
-            // .output(audioout)
-            // .outputOptions([
-            //     '-acodec libopus',
-            //     '-vn',
-            //     '-f rtp',
-            //     '-payload_type ' + audioPt
-            // ])
-            .on('start', (commandLine) => {
-                console.log(commandLine);
-            })
-            .on('error', (err,stdout,stderr) =>{
-                console.error('ffmpeg error', stderr);
-            })
-            .on('end', () => {
-                console.log('transcode end')
-            })
-            .run()
+        // ffmpeg(rtmpUrl)
+        //     .inputOptions([
+        //         '-fflags nobuffer'
+        //     ])
+        //     .output(videoout)
+        //     .outputOptions([
+        //         // '-flags:v +global_header',
+        //         // '-bsf:v h264_mp4toannexb,dump_extra',
+        //         '-vcodec copy',  // change to vp8 for now, h264 is not very stable 
+        //         '-an',
+        //         '-f rtp',
+        //         '-payload_type ' + videoPt
+        //     ])
+        //     // video only
+        //     // .output(audioout)
+        //     // .outputOptions([
+        //     //     '-acodec libopus',
+        //     //     '-vn',
+        //     //     '-f rtp',
+        //     //     '-payload_type ' + audioPt
+        //     // ])
+        //     .on('start', (commandLine) => {
+        //         console.log(commandLine);
+        //     })
+        //     .on('error', (err,stdout,stderr) =>{
+        //         console.error('ffmpeg error', stderr);
+        //     })
+        //     .on('end', () => {
+        //         console.log('transcode end')
+        //     })
+        //     .run()
 
     }
     async getMediaPort()
