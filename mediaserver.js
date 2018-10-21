@@ -20,10 +20,10 @@ const audioPt = 100;
 const videoCodec = 'h264'; 
 const audioCodec = 'opus';
 
-let videoPort = 20000;
-let audioPort = 20002;
+let videoPort = null;
+let audioPort = null;
 
-const RTMP_TO_RTP = "gst-launch-1.0  -v  rtmpsrc location=rtmp://localhost/live/{stream} ! flvdemux ! h264parse ! rtph264pay config-interval=-1 pt={pt} !  udpsink host=127.0.0.1 port={port}"
+const RTMP_TO_RTP = "gst-launch-1.0 -v  rtmpsrc location=rtmp://localhost/live/{stream} ! flvdemux ! h264parse ! rtph264pay config-interval=-1 pt={pt} !  udpsink host=127.0.0.1 port={port}"
 
 class MediaServer 
 {
