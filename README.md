@@ -8,7 +8,7 @@
 
 https://rtmp-to-webrtc.dot.cc
 
-
+demo 部署在个人测试服务器上,  带宽有限,  如果挂了请通知我.
 
 
 ### 如何工作 
