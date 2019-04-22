@@ -1,6 +1,6 @@
 # rtmp-to-webrtc
 
-基于RTMP-CDN和WebRTC的低延迟(1000ms以内)直播系统 
+基于RTMP-CDN和WebRTC的低延迟(500ms以内)直播系统 
 
 
 ### 观看效果 
