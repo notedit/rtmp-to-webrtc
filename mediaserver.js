@@ -16,14 +16,15 @@ const CodecInfo		= SemanticSDP.CodecInfo;
 
 const videoPt = 96;
 const audioPt = 100;
-// const videoCodec = 'vp8';  // use vp8 for now, h264 is not stable for now
 const videoCodec = 'h264'; 
 const audioCodec = 'opus';
 
 let videoPort = null;
 let audioPort = null;
 
-const RTMP_TO_RTP = "gst-launch-1.0 -v  rtmpsrc location=rtmp://localhost/live/{stream} ! flvdemux ! h264parse ! rtph264pay config-interval=-1 pt={pt} !  udpsink host=127.0.0.1 port={port}"
+
+const RTMP_TO_RTP = 'ffmpeg -fflags nobuffer -i rtmp://ali.wangxiao.eaydu.com/live_bak/x_100_rtc_test -vcodec copy -an -bsf:v h264_mp4toannexb -f rtp -payload_type {pt} rtp://127.0.0.1:{port}'
+
 
 class MediaServer 
 {
@@ -102,7 +103,7 @@ class MediaServer
             audio:audioSession
         });
 
-        let rtmp_to_rtp = format(RTMP_TO_RTP, {stream:streamName, pt: videoPt, port: videoPort});
+        let rtmp_to_rtp = format(RTMP_TO_RTP2, {stream:streamName, pt: videoPt, port: videoPort});
 
         console.log('rtmp_to_rtp ', rtmp_to_rtp);
 
