@@ -23,10 +23,10 @@ let videoPort = null;
 let audioPort = null;
 
 
-const RTMP_TO_RTP = 'ffmpeg -fflags nobuffer -i rtmp://ali.wangxiao.eaydu.com/live_bak/x_100_rtc_test -vcodec copy -an -bsf:v h264_mp4toannexb -f rtp -payload_type {pt} rtp://127.0.0.1:{port}'
+//const RTMP_TO_RTP = 'ffmpeg -fflags nobuffer -i rtmp://ali.wangxiao.eaydu.com/live_bak/x_100_rtc_test -vcodec copy -an -bsf:v h264_mp4toannexb -f rtp -payload_type {pt} rtp://127.0.0.1:{port}'
 
 
-//const RTMP_TO_RTP = "gst-launch-1.0 -v  rtmpsrc location=rtmp://ali.wangxiao.eaydu.com/live_bak/x_100_rtc_test ! flvdemux ! h264parse ! rtph264pay config-interval=-1 pt={pt} !  udpsink host=127.0.0.1 port={port}"
+const RTMP_TO_RTP = "gst-launch-1.0 -v  rtmpsrc location=rtmp://ali.wangxiao.eaydu.com/live_bak/x_100_rtc_test ! flvdemux ! h264parse ! rtph264pay config-interval=-1 pt={pt} !  udpsink host=127.0.0.1 port={port}"
 
 
 class MediaServer 
