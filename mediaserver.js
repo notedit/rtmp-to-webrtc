@@ -124,6 +124,9 @@ class MediaServer
             console.log(code, signal)
         })
 
+	videoPort = null;
+	audioPort = null;
+
     }
     async getMediaPort()
     {
