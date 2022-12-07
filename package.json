@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/notedit/rtmp-to-webrtc#readme",
   "dependencies": {
-    "body-parser": "^1.18.2",
+    "body-parser": "^1.20.1",
     "execa": "^1.0.0",
     "fluent-ffmpeg": "^2.1.2",
     "get-port": "^4.0.0",
